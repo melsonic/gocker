@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
@@ -13,16 +14,19 @@ var runCommand = &cobra.Command{
 	Short: "run a command",
 	Long:  "run a command with arguments in gocker!",
 	Run: func(cmd *cobra.Command, args []string) {
-		command := exec.Command(args[1], args[2:]...)
-		output, err := command.Output()
-		if err != nil {
-			exitError := err.(*exec.ExitError)
-			// print the actual error message returned by the command
-			fmt.Println(string(exitError.Stderr))
-			// return the process exit code
-			os.Exit(err.(*exec.ExitError).ProcessState.ExitCode())
+		command := exec.Cmd{
+			Path:   "/bin/bash",
+			Stdin:  os.Stdin,
+			Stdout: os.Stdout,
+			Stderr: os.Stderr,
+			SysProcAttr: &syscall.SysProcAttr{
+				Cloneflags: syscall.CLONE_NEWUTS,
+			},
 		}
-		fmt.Println(string(output))
+		err := command.Run()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	},
 }
 
