@@ -14,8 +14,13 @@ var runCommand = &cobra.Command{
 	Short: "run a command",
 	Long:  "run a command with arguments in gocker!",
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			os.Exit(2)
+		}
 		command := exec.Cmd{
-			Path:   "/bin/bash",
+			Path:   args[1],
+			Args:   args[1:],
+			Dir:    "/usr/bin",
 			Stdin:  os.Stdin,
 			Stdout: os.Stdout,
 			Stderr: os.Stderr,
