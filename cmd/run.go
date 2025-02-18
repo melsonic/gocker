@@ -20,11 +20,12 @@ var runCommand = &cobra.Command{
 		command := exec.Cmd{
 			Path:   args[1],
 			Args:   args[1:],
-			Dir:    "/usr/bin",
+			Dir:    "/",
 			Stdin:  os.Stdin,
 			Stdout: os.Stdout,
 			Stderr: os.Stderr,
 			SysProcAttr: &syscall.SysProcAttr{
+				Chroot:     "./alpine_root_fs/",
 				Cloneflags: syscall.CLONE_NEWUTS,
 			},
 		}
