@@ -14,19 +14,15 @@ var runCommand = &cobra.Command{
 	Short: "run a command",
 	Long:  "run a command with arguments in gocker!",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
-			os.Exit(2)
-		}
+		args = append([]string{"/proc/self/exe", "child"}, args...)
 		command := exec.Cmd{
-			Path:   args[1],
-			Args:   args[1:],
-			Dir:    "/",
+			Path:   args[0],
+			Args:   args,
 			Stdin:  os.Stdin,
 			Stdout: os.Stdout,
 			Stderr: os.Stderr,
 			SysProcAttr: &syscall.SysProcAttr{
-				Chroot:     "./alpine_root_fs/",
-				Cloneflags: syscall.CLONE_NEWUTS,
+				Cloneflags: syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS,
 			},
 		}
 		err := command.Run()
@@ -36,9 +32,6 @@ var runCommand = &cobra.Command{
 	},
 }
 
-func Execute() {
-	if err := runCommand.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+func init() {
+	rootCommand.AddCommand(runCommand)
 }
