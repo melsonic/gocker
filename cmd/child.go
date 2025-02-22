@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
@@ -22,29 +21,13 @@ var childCommand = &cobra.Command{
 			Stderr: os.Stderr,
 		}
 
-		err := syscall.Chroot("/")
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		err = syscall.Chdir("/")
-		if err != nil {
-			fmt.Println(err.Error())
-		}
+		must(syscall.Chroot("/"))
+		must(syscall.Chdir("/"))
 		defer syscall.Unmount("proc", syscall.MNT_DETACH)
-		err = syscall.Mount("proc", "proc", "proc", 0, "")
-		if err != nil {
-			fmt.Println("mount error: ", err.Error())
-			return
-		}
-		err = syscall.Unshare(syscall.CLONE_NEWNS)
-		if err != nil {
-			fmt.Println("unshare error: ", err.Error())
-			return
-		}
-		err = command.Run()
-		if err != nil {
-			fmt.Println(err.Error())
-		}
+		must(syscall.Mount("proc", "proc", "proc", 0, ""))
+		must(syscall.Unshare(syscall.CLONE_NEWNS))
+		must(command.Run())
+		return
 	},
 }
 

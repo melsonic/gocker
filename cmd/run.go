@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
@@ -22,13 +21,24 @@ var runCommand = &cobra.Command{
 			Stdout: os.Stdout,
 			Stderr: os.Stderr,
 			SysProcAttr: &syscall.SysProcAttr{
-				Cloneflags: syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS,
+				Cloneflags: syscall.CLONE_NEWPID | syscall.CLONE_NEWUTS | syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER,
+				UidMappings: []syscall.SysProcIDMap{
+					{
+						ContainerID: 0,
+						HostID:      1000,
+						Size:        1,
+					},
+				},
+				GidMappings: []syscall.SysProcIDMap{
+					{
+						ContainerID: 0,
+						HostID:      1000,
+						Size:        1,
+					},
+				},
 			},
 		}
-		err := command.Run()
-		if err != nil {
-			fmt.Println(err.Error())
-		}
+		must(command.Run())
 	},
 }
 
